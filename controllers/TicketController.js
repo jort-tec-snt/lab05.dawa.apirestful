@@ -8,8 +8,11 @@ exports.create = (req, res) => {
 };
 
 exports.list = (req, res) => {
-  const page = Number.parseInt(req.query.page, 10) || 1;
-  const limit = Number.parseInt(req.query.limit, 10) || 5;
+  const requestedPage = Number.parseInt(req.query.page, 10);
+  const requestedLimit = Number.parseInt(req.query.limit, 10);
+
+  const page = Number.isNaN(requestedPage) ? 1 : requestedPage;
+  const limit = Number.isNaN(requestedLimit) ? 5 : requestedLimit;
 
   if (page < 1 || limit < 1) {
     const error = new Error("page y limit deben ser mayores a cero");
