@@ -5,6 +5,9 @@ const morgan = require("morgan");
 const app = express();
 const PORT = 3000;
 
+const ticketRoutes = require("./routes/ticket.routes");
+const notificationRoutes = require("./routes/notification.routes");
+
 // Middlewares globales
 app.use(express.json());
 app.use(cors());
@@ -17,4 +20,6 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+app.use("/tickets", ticketRoutes);
+app.use("/notifications", notificationRoutes);
 });
