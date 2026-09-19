@@ -57,8 +57,18 @@ class TicketService {
     return ticket;
   }
 
-  list() {
-    return this.repo.findAll();
+  list(page = 1, limit = 5) {
+    const tickets = this.repo.findAll();
+    const startIndex = (page - 1) * limit;
+    const paginatedTickets = tickets.slice(startIndex, startIndex + limit);
+
+    return {
+      page,
+      limit,
+      totalTickets: tickets.length,
+      totalPages: Math.ceil(tickets.length / limit),
+      tickets: paginatedTickets,
+    };
   }
 
   deleteTicket(id) {
