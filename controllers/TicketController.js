@@ -54,3 +54,8 @@ exports.delete = (req, res) => {
     res.status(404).json({ error: error.message });
   }
 };
+
+exports.notifications = (req, res) => {
+  const notifications = service.getNotifications(req.params.id);
+  res.status(200).json(notifications);
+};
