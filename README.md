@@ -25,13 +25,13 @@ La consola debe mostrar un resultado similar a:
 Servidor ejecutándose en http://localhost:3000
 ```
 
-Mantén esta terminal abierta y ejecuta las pruebas desde una segunda terminal.
+Mantén esta terminal abierta y ejecuta las pruebas desde una segunda terminal o desde Postman.
 
-El servidor escucha en `127.0.0.1:3000`, por lo que puedes usar indistintamente `http://localhost:3000` o `http://127.0.0.1:3000`.
+El servidor escucha en `127.0.0.1:3000`, por lo que puedes usar `http://localhost:3000` o `http://127.0.0.1:3000`.
 
 ### Si el puerto 3000 está ocupado
 
-Si aparece `EADDRINUSE`, cierra el proceso anterior que está usando el puerto y vuelve a iniciar:
+Si aparece `EADDRINUSE`, identifica y cierra el proceso anterior:
 
 ```bash
 lsof -i :3000
@@ -41,9 +41,7 @@ npm run dev
 
 También puedes cerrar la terminal anterior donde quedó ejecutándose `nodemon`.
 
-## Pruebas con curl
-
-Todas las respuestas se pueden mostrar con su código HTTP usando `-i`.
+## Pruebas de la API
 
 ### 1. Crear un ticket
 
@@ -57,7 +55,7 @@ curl -i -X POST http://localhost:3000/tickets \
   }'
 ```
 
-La respuesta debe ser `201 Created`. Copia el valor de `id` de la respuesta y úsalo como `<ID_DEL_TICKET>` en las siguientes pruebas.
+La respuesta debe ser `201 Created`. Copia el valor de `id` para usarlo en las siguientes solicitudes.
 
 ### 2. Listar tickets con paginación
 
@@ -67,7 +65,7 @@ curl -i "http://localhost:3000/tickets?page=1&limit=5"
 
 Debe responder `200 OK` y mostrar `page`, `limit`, `totalTickets`, `totalPages` y `tickets`.
 
-### 3. Asignar el ticket
+### 3. Asignar un ticket
 
 ```bash
 curl -i -X PUT "http://localhost:3000/tickets/<ID_DEL_TICKET>/assign" \
@@ -75,9 +73,7 @@ curl -i -X PUT "http://localhost:3000/tickets/<ID_DEL_TICKET>/assign" \
   -d '{"user":"Ana Pérez"}'
 ```
 
-Debe responder `200 OK` y mostrar `assignedUser`.
-
-### 4. Cambiar el estado
+### 4. Cambiar el estado de un ticket
 
 ```bash
 curl -i -X PUT "http://localhost:3000/tickets/<ID_DEL_TICKET>/status" \
@@ -85,15 +81,11 @@ curl -i -X PUT "http://localhost:3000/tickets/<ID_DEL_TICKET>/status" \
   -d '{"status":"en progreso"}'
 ```
 
-Debe responder `200 OK` y mostrar el nuevo `status`.
-
 ### 5. Listar todas las notificaciones
 
 ```bash
 curl -i http://localhost:3000/notifications
 ```
-
-Debe responder `200 OK`. Después de crear, asignar y cambiar el estado, debe incluir las notificaciones generadas para esas acciones.
 
 ### 6. Consultar el historial de un ticket
 
@@ -101,9 +93,9 @@ Debe responder `200 OK`. Después de crear, asignar y cambiar el estado, debe in
 curl -i "http://localhost:3000/tickets/<ID_DEL_TICKET>/notifications"
 ```
 
-Debe responder `200 OK` con un arreglo de notificaciones cuyo `ticketId` coincida con el ticket consultado.
+Debe responder `200 OK` con las notificaciones cuyo `ticketId` corresponde al ticket solicitado.
 
-### 7. Eliminar el ticket
+### 7. Eliminar un ticket
 
 ```bash
 curl -i -X DELETE "http://localhost:3000/tickets/<ID_DEL_TICKET>"
@@ -111,38 +103,29 @@ curl -i -X DELETE "http://localhost:3000/tickets/<ID_DEL_TICKET>"
 
 Debe responder `200 OK` con el mensaje `Ticket eliminado correctamente`.
 
-## Evidencia recomendada para capturas
+## Evidencias de las tareas
 
-Toma las capturas con la terminal mostrando el comando completo y su respuesta:
+### 1. Paginación de tickets
 
-1. `npm run dev` mostrando que el servidor inicia sin crash.
-2. `POST /tickets` mostrando `201 Created` y el `id` generado.
-3. `GET /tickets?page=1&limit=5` mostrando `200 OK` y la paginación.
-4. `PUT /tickets/:id/assign` mostrando el usuario asignado.
-5. `PUT /tickets/:id/status` mostrando el estado actualizado.
-6. `GET /notifications` mostrando las notificaciones creadas.
-7. `GET /tickets/:id/notifications` mostrando el historial filtrado por ticket.
-8. `DELETE /tickets/:id` mostrando la eliminación correcta.
+La consulta `GET /tickets?page=1&limit=5` devuelve los tickets paginados y los metadatos `page`, `limit`, `totalTickets` y `totalPages`.
 
-Para que cada captura sea clara, deja visible el prompt, el comando `curl`, el código HTTP y el JSON de respuesta. Puedes usar una captura por endpoint o agrupar dos endpoints relacionados en una misma captura si todo el contenido resulta legible.
+![Paginación de tickets](img/evidencia1.png)
 
-Guarda las imágenes, por ejemplo, en `docs/evidencias/` y enlázalas así:
+### 2. Historial de notificaciones por ticket
 
-```markdown
-### Inicio del servidor
+La consulta `GET /tickets/:id/notifications` devuelve únicamente las notificaciones asociadas al ticket solicitado.
 
-![Servidor iniciado](docs/evidencias/01-servidor-iniciado.png)
+![Historial por ticket](img/evidencia2.png)
 
-### Historial de notificaciones
+### 3. Manejo global de errores
 
-![Historial de notificaciones](docs/evidencias/07-historial-notificaciones.png)
-```
+La consulta `GET /tickets?page=0&limit=5` genera una respuesta `400 Bad Request`, procesada mediante el middleware global `errorHandler`.
 
-Usa nombres numerados (`01-...`, `02-...`, etc.) para que las evidencias sigan el mismo orden que las pruebas.
+![Manejo global de errores](img/evidencia3.png)
 
 ## Verificación de la solución implementada
 
-La ruta de historial sigue este flujo:
+El historial de notificaciones sigue el flujo:
 
 ```text
 GET /tickets/:id/notifications
@@ -155,7 +138,7 @@ Además, `app.js` registra `errorHandler` después de las rutas para procesar lo
 
 ## Restaurar la base de datos de prueba
 
-Si las pruebas generaron datos y se necesita dejar el proyecto limpio, conserva `database/db.json` con este contenido:
+Al finalizar las pruebas, `database/db.json` debe quedar limpio:
 
 ```json
 {
