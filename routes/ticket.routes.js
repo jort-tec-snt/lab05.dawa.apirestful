@@ -8,4 +8,6 @@ router.put("/:id/assign", controller.assign);
 router.put("/:id/status", controller.changeStatus);
 router.delete("/:id", controller.delete);
 
+router.get("/:id/notifications", controller.notifications);
+
 module.exports = router;

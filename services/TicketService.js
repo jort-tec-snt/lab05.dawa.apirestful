@@ -71,6 +71,10 @@ class TicketService {
     };
   }
 
+  getNotifications(id) {
+    return this.notificationService.listByTicket(id);
+  }
+
   deleteTicket(id) {
     const deleted = this.repo.delete(id);
 
