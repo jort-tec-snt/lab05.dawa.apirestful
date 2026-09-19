@@ -8,7 +8,16 @@ exports.create = (req, res) => {
 };
 
 exports.list = (req, res) => {
-  res.status(200).json(service.list());
+  const page = Number.parseInt(req.query.page, 10) || 1;
+  const limit = Number.parseInt(req.query.limit, 10) || 5;
+
+  if (page < 1 || limit < 1) {
+    const error = new Error("page y limit deben ser mayores a cero");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  res.status(200).json(service.list(page, limit));
 };
 
 exports.assign = (req, res) => {
